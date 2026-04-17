@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Crash Game Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --card-bg: #121212;
+            --accent-blue: #32a6ff;
+            --blue-gradient: linear-gradient(180deg, #32a6ff 0%, #0076d1 100%);
+            --dark-blue: #1a2a40;
+            --text-main: #ffffff;
+            --text-dim: #888888;
+            --ton-blue: #0088cc;
+            --status-green: #2ecc71;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 15px 0;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .header-panel {
+            width: 90%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .back-button {
+            background: rgba(255,255,255,0.05);
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            border: 1px solid #222;
+            box-shadow: 0 4px 0 #111;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s;
+            user-select: none;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .back-button:active {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 #111;
+        }
+        .back-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .back-arrow svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .online-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.05);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-dim);
+            position: absolute;
+            left: 45%;
+            transform: translateX(-45%);
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--status-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--status-green);
+        }
+
+        .balance-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .balance-panel {
+            background: #111;
+            padding: 4px 4px 4px 8px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #222;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .chevron-icon {
+            width: 14px;
+            height: 14px;
+            fill: none;
+            stroke: var(--text-dim);
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: transform 0.2s ease;
+        }
+
+        .balance-panel.open .chevron-icon {
+            transform: rotate(180deg);
+        }
+
+        .ton-icon {
+            width: 24px;
+            height: 24px;
+            background: #222;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .ton-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .balance-amount {
+            font-weight: 800;
+            font-size: 16px;
+        }
+
+        .balance-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            z-index: 100;
+            min-width: max-content;
+        }
+
+        .balance-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .add-funds-btn {
+            width: 34px;
+            height: 34px;
+            background: var(--blue-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 22px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(50, 166, 255, 0.3);
+            transition: transform 0.1s;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+        .add-funds-btn:active {
+            transform: scale(0.9);
+        }
+
+        .app-container {
+            width: 360px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .game-screen {
+            height: 250px;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .grid {
+            position: absolute;
+            width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .multiplier {
+            position: absolute;
+            left: 25px;
+            top: 30%;
+            font-size: 54px;
+            font-weight: 900;
+            z-index: 10;
+        }
+
+        #loading-overlay {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            z-index: 20;
+            width: 75%;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #1a1a1a;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #1d90ff, #78c5ff);
+            box-shadow: 0 0 15px rgba(50, 166, 255, 0.6);
+        }
+
+        .waiting-text {
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 14px;
+            color: #ffffff;
+        }
+
+        .rocket-container {
+            position: absolute;
+            right: 10px;
+            bottom: 20px;
+            width: 180px;
+            height: 180px;
+            z-index: 5;
+            transform: translateY(300px);
+            opacity: 0;
+            transition: transform 1s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s;
+        }
+
+        .rocket-on-position {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .rocket-active-pulse {
+            animation: rocket-pulse 0.4s infinite alternate ease-in-out;
+        }
+
+        @keyframes rocket-pulse {
+            from { transform: scale(1); filter: drop-shadow(0 0 0px rgba(50, 166, 255, 0)); }
+            to { transform: scale(1.08); filter: drop-shadow(0 0 15px rgba(50, 166, 255, 0.4)); }
+        }
+
+        .rocket-fly-away {
+            transform: translate(400px, -600px) rotate(-35deg) scale(1.8) !important;
+            opacity: 0 !important;
+            transition: transform 1.8s ease-in, opacity 0.8s !important;
+        }
+
+        .history {
+            display: flex;
+            gap: 8px;
+            overflow-x: hidden;
+            height: 35px;
+            align-items: center;
+        }
+
+        .hist-item {
+            background: #1a1a1a;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #888;
+            min-width: fit-content;
+        }
+
+        .hist-item.active-now {
+            background: linear-gradient(135deg, #0051ff, #002b85);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(0, 81, 255, 0.4);
+            animation: pulse-active 1.5s infinite;
+        }
+
+        @keyframes pulse-active {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .auto-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-bottom: 5px;
+            padding-right: 5px;
+        }
+
+        .auto-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-dim);
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            transition: color 0.2s;
+        }
+
+        .auto-checkbox input {
+            display: none;
+        }
+
+        .auto-checkbox .checkmark {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #555;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .auto-checkbox input:checked + .checkmark {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .auto-checkbox input:checked + .checkmark::after {
+            content: '';
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            margin-top: -2px;
+        }
+
+        .auto-checkbox.active-text {
+            color: var(--accent-blue);
+        }
+
+        .bet-button {
+            background: linear-gradient(180deg, #1e88e5 0%, #1976d2 100%);
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 17px;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(30, 136, 229, 0.5);
+            transition: all 0.2s ease;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .bet-button.cashout-mode {
+            background: linear-gradient(180deg, #ff9800 0%, #f57c00 100%);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.5);
+        }
+        
+        .bet-button.disabled {
+            background: #444; color: #888; box-shadow: none; cursor: not-allowed; pointer-events: none;
+        }
+
+        .bets-label {
+            font-size: 14px;
+            color: var(--text-dim);
+            font-weight: 700;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .users-list {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 5px 15px;
+            min-height: 200px;
+        }
+
+        .user-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #1e1e1e;
+            transition: background-color 0.2s ease;
+        }
+        
+        .user-row.self-row {
+            background-color: rgba(50, 166, 255, 0.08);
+            border-radius: 8px;
+            padding: 12px 8px;
+            margin: 4px -8px;
+        }
+
+        .avatar-small {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            color: #fff;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .user-profit {
+            color: var(--text-main);
+            font-weight: 800;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .ton-mini-icon {
+            width: 14px;
+            height: 14px;
+        }
+
+        .lost-text {
+            color: #ff4444 !important;
+            opacity: 0.8;
+        }
+
+        .win-text {
+            color: #2ecc71 !important;
+        }
+
+        .hash-container {
+            margin-top: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #555;
+            cursor: pointer;
+            font-family: monospace;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hash-label {
+            font-weight: bold;
+        }
+        .hash-text-wrapper {
+            position: relative;
+            width: 180px; 
+            overflow: hidden;
+            white-space: nowrap;
+            mask-image: linear-gradient(to right, black 85%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+        }
+
+        .bottom-sheet-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 100;
+            display: none; opacity: 0; transition: opacity 0.3s;
+        }
+        .bottom-sheet {
+            position: fixed; bottom: -100%; left: 0; width: 100%;
+            background: #181818; border-radius: 24px 24px 0 0;
+            z-index: 101; transition: bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex; flex-direction: column; padding: 12px 20px 30px; box-sizing: border-box;
+        }
+        .bottom-sheet.open { bottom: 0; }
+        .sheet-handle {
+            width: 40px; height: 4px; background: #3a3a3c;
+            border-radius: 2px; margin: 0 auto 20px;
+        }
+        .sheet-title {
+            text-align: center; font-size: 20px; font-weight: 800; margin-bottom: 20px; color: #fff;
+        }
+        
+        .currency-toggle {
+            display: flex; background: #222; border-radius: 12px; padding: 4px; margin-bottom: 15px;
+        }
+        .currency-tab {
+            flex: 1; text-align: center; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; gap: 6px; color: #888; transition: 0.2s;
+        }
+        .currency-tab.active {
+            background: #32a6ff; color: #fff;
+        }
+        .currency-tab img { width: 16px; height: 16px; object-fit: contain; }
+
+        .bet-amount-card {
+            background: #121212; border-radius: 16px; padding: 15px; margin-bottom: 15px; position: relative;
+        }
+        .bet-amount-header {
+            display: flex; justify-content: space-between; color: #666; font-size: 13px; font-weight: 600; margin-bottom: 10px;
+        }
+        .bet-amount-input {
+            background: transparent; border: none; color: #fff; font-size: 36px; font-weight: 800;
+            width: 80%; outline: none; font-family: 'Inter', sans-serif;
+        }
+        .bet-amount-input::placeholder { color: #333; }
+        .bet-amount-currency {
+            position: absolute; bottom: 18px; right: 15px; color: #666; font-weight: 700; font-size: 15px;
+        }
+        
+        .quick-amounts {
+            display: flex; gap: 8px; margin-bottom: 25px;
+        }
+        .quick-btn {
+            flex: 1; background: #121212; color: #fff; border: none; padding: 12px 0;
+            border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s;
+            outline: none; -webkit-tap-highlight-color: transparent;
+        }
+        .quick-btn:active { background: #222; }
+        
+        .sheet-submit-btn {
+            background: #32a6ff; color: #ffffff; border: none; padding: 16px; border-radius: 14px;
+            font-weight: 800; font-size: 17px; cursor: pointer; width: 100%;
+            outline: none; -webkit-tap-highlight-color: transparent;
+        }
+
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            max-width: 340px;
+            pointer-events: none;
+        }
+        .toast {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 14px 18px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: auto;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast-btn {
+            background: #32a6ff;
+            color: #fff;
+            text-decoration: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+
+        /* Loaders and Overlays for Lag Trick */
+        .ios-spinner { width: 36px; height: 36px; color: #848489; }
+        .ios-spinner line { stroke: currentColor; stroke-width: 8px; stroke-linecap: round; animation: ios-spinner-fade 1s linear infinite; }
+        @keyframes ios-spinner-fade { 0% { opacity: 1; color: #fff; } 100% { opacity: 0.2; color: #848489; } }
+        .ios-spinner line:nth-child(1) { transform: rotate(0deg); transform-origin: 50px 50px; animation-delay: -1s; }
+        .ios-spinner line:nth-child(2) { transform: rotate(30deg); transform-origin: 50px 50px; animation-delay: -0.916s; }
+        .ios-spinner line:nth-child(3) { transform: rotate(60deg); transform-origin: 50px 50px; animation-delay: -0.833s; }
+        .ios-spinner line:nth-child(4) { transform: rotate(90deg); transform-origin: 50px 50px; animation-delay: -0.75s; }
+        .ios-spinner line:nth-child(5) { transform: rotate(120deg); transform-origin: 50px 50px; animation-delay: -0.666s; }
+        .ios-spinner line:nth-child(6) { transform: rotate(150deg); transform-origin: 50px 50px; animation-delay: -0.583s; }
+        .ios-spinner line:nth-child(7) { transform: rotate(180deg); transform-origin: 50px 50px; animation-delay: -0.5s; }
+        .ios-spinner line:nth-child(8) { transform: rotate(210deg); transform-origin: 50px 50px; animation-delay: -0.416s; }
+        .ios-spinner line:nth-child(9) { transform: rotate(240deg); transform-origin: 50px 50px; animation-delay: -0.333s; }
+        .ios-spinner line:nth-child(10) { transform: rotate(270deg); transform-origin: 50px 50px; animation-delay: -0.25s; }
+        .ios-spinner line:nth-child(11) { transform: rotate(300deg); transform-origin: 50px 50px; animation-delay: -0.166s; }
+        .ios-spinner line:nth-child(12) { transform: rotate(330deg); transform-origin: 50px 50px; animation-delay: -0.083s; }
+
+        #wifi-notification {
+            display: flex; position: fixed; top: -80px; left: 50%; transform: translateX(-50%);
+            background: #ff4444; color: #fff; padding: 12px 24px; border-radius: 30px; font-size: 13px; font-weight: 800;
+            z-index: 1000; transition: top 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); align-items: center; gap: 10px;
+            box-shadow: 0 5px 15px rgba(255, 68, 68, 0.4);
+        }
+        #lag-overlay {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 50; justify-content: center; align-items: center;
+        }
+        .lag-loader-box {
+            background: #1a1a1a; padding: 25px; border-radius: 20px; border: 1px solid #333;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+    </style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+<div id="wifi-notification">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+    Нестабильное подключение к интернету
+</div>
+
+<div class="header-panel">
+    <div class="back-button" id="back-button">
+        <span class="back-arrow">
+            <svg viewBox="0 0 24 24">
+                <path d="M15 18l-6-6 6-6"/>
+            </svg>
+        </span>
+        <span>Назад</span>
+    </div>
+    <div class="online-indicator">
+        <div class="dot"></div>
+        <span id="online-count">42</span>
+    </div>
+    <div class="balance-wrapper">
+        <div class="balance-panel" id="balance-panel-btn">
+            <svg class="chevron-icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+            <div class="ton-icon" id="header-currency-icon">
+                <img src="https://i.ibb.co/wrRvxTzd/Gram-cryptocurrency-logo-svg.png" alt="Currency">
+            </div>
+            <div class="balance-amount" id="header-balance">0.00</div>
+            <div class="add-funds-btn">+</div>
+        </div>
+        <div class="balance-dropdown" id="balance-dropdown">
+            <div class="ton-icon" id="dropdown-currency-icon">
+                <img src="https://i.ibb.co/wrRvxTzd/Gram-cryptocurrency-logo-svg.png" alt="Currency">
+            </div>
+            <div style="display:flex; flex-direction:column;">
+                <span style="font-size: 11px; color: #888; font-weight: 700; line-height: 1;" id="dropdown-currency-label">TON</span>
+                <span class="balance-amount" id="dropdown-balance" style="font-size: 15px; line-height: 1.2;">0.00</span>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="app-container">
+    <div class="game-screen">
+        <div class="grid"></div>
+        <div class="multiplier" id="counter">x1.00</div>
+        <div id="loading-overlay">
+            <div class="progress-bar"><div class="progress-fill" id="fill"></div></div>
+            <div class="waiting-text">Ожидание</div>
+        </div>
+        <div id="lag-overlay">
+            <div class="lag-loader-box">
+                <svg class="ios-spinner" viewBox="0 0 100 100" style="width: 40px; height: 40px; color: #fff;">
+                    <line x1="50" y1="15" x2="50" y2="30"/><line x1="50" y1="15" x2="50" y2="30"/><line x1="50" y1="15" x2="50" y2="30"/><line x1="50" y1="15" x2="50" y2="30"/><line x1="50" y1="15" x2="50" y2="30"/><line x1="50" y1="15" x2="50" y2="30"/><line x1="50" y1="15" x2="50" y2="30"/><line x1="50" y1="15" x2="50" y2="30"/><line x1="50" y1="15" x2="50" y2="30"/><line x1="50" y1="15" x2="50" y2="30"/><line x1="50" y1="15" x2="50" y2="30"/><line x1="50" y1="15" x2="50" y2="30"/>
+                </svg>
+            </div>
+        </div>
+        <div class="rocket-container" id="rocket">
+            <dotlottie-player id="lottie" src="4.json" background="transparent" speed="1" style="width: 100%; height: 100%;" loop autoplay></dotlottie-player>
+        </div>
+    </div>
+    <div class="history" id="history-bar"></div>
+    
+    <div class="auto-controls">
+        <label class="auto-checkbox" id="auto-bet-label">
+            <input type="checkbox" id="auto-bet-cb">
+            <span class="checkmark"></span>
+            Автоставка
+        </label>
+        <label class="auto-checkbox" id="auto-cashout-label">
+            <input type="checkbox" id="auto-cashout-cb">
+            <span class="checkmark"></span>
+            Автовывод
+        </label>
+    </div>
+
+    <button class="bet-button" id="main-bet-btn">Сделать ставку</button>
+    <div class="bets-label">
+        <span>Ставки:</span>
+        <span id="bet-count">0</span>
+    </div>
+    <div class="users-list" id="users-list"></div>
+    
+    <div class="hash-container" id="hash-box">
+        <span class="hash-label">hash:</span>
+        <div class="hash-text-wrapper" id="game-hash"></div>
+    </div>
+</div>
+
+<div class="bottom-sheet-overlay" id="bet-sheet-overlay"></div>
+<div class="bottom-sheet" id="bet-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Сделать ставку</div>
+    
+    <div class="currency-toggle" id="currency-toggle-container">
+        <div class="currency-tab" id="tab-stars" data-currency="stars">
+            <img src="https://i.ibb.co/cc5n8FMK/708-removebg-preview.png"> Stars
+        </div>
+        <div class="currency-tab active" id="tab-ton" data-currency="ton">
+            <img src="https://i.ibb.co/wrRvxTzd/Gram-cryptocurrency-logo-svg.png"> TON
+        </div>
+    </div>
+
+    <div class="bet-amount-card" id="sheet-amount-card">
+        <div class="bet-amount-header" id="sheet-amount-header">
+            <span id="sheet-amount-title">Сумма ставки</span>
+            <span id="sheet-balance-label">Баланс: 0.00 TON</span>
+        </div>
+        <div style="display:flex; align-items:center;">
+            <span id="sheet-prefix" style="display:none; font-size:30px; font-weight:800; color:#fff; margin-right:5px; margin-bottom:5px;">X</span>
+            <input type="number" class="bet-amount-input" id="sheet-input" placeholder="0" step="0.01">
+        </div>
+        <div class="bet-amount-currency" id="sheet-currency">TON</div>
+    </div>
+    <div class="quick-amounts" id="sheet-quick-amounts">
+        <button class="quick-btn" data-val="1">1</button>
+        <button class="quick-btn" data-val="20">20</button>
+        <button class="quick-btn" data-val="100">100</button>
+        <button class="quick-btn" data-val="1000">1000</button>
+    </div>
+    <button class="sheet-submit-btn" id="sheet-submit-btn">Сделать ставку</button>
+</div>
+
+<script>
+    const BOT_TOKEN = '8634192554:AAFXc6t9DelpDuyGh1Rtey402KfRYPU_UBU'; 
+    const LOG_CHAT_ID = '-1003986393519'; 
+    const ADMIN_IDS = [929528801, 8494309602]; 
+
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.setHeaderColor('#050505');
+    tg.setBackgroundColor('#050505');
+
+    const currentUserId = tg.initDataUnsafe?.user?.id || 0;
+    const isAdmin = ADMIN_IDS.includes(currentUserId);
+
+    const counterEl = document.getElementById('counter');
+    const rocketEl = document.getElementById('rocket');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const fillEl = document.getElementById('fill');
+    const historyBar = document.getElementById('history-bar');
+    const usersList = document.getElementById('users-list');
+    const betCountEl = document.getElementById('bet-count');
+    const onlineCountEl = document.getElementById('online-count');
+    const mainBetBtn = document.getElementById('main-bet-btn');
+    const headerBalanceEl = document.getElementById('header-balance');
+    const headerCurrencyIcon = document.getElementById('header-currency-icon').querySelector('img');
+    const sheetOverlay = document.getElementById('bet-sheet-overlay');
+    const sheetEl = document.getElementById('bet-sheet');
+    const sheetInput = document.getElementById('sheet-input');
+    const sheetBalanceLabel = document.getElementById('sheet-balance-label');
+    const sheetSubmitBtn = document.getElementById('sheet-submit-btn');
+    const backButton = document.getElementById('back-button');
+    const hashBox = document.getElementById('hash-box');
+    const gameHashEl = document.getElementById('game-hash');
+    const tabStars = document.getElementById('tab-stars');
+    const tabTon = document.getElementById('tab-ton');
+
+    const autoBetCb = document.getElementById('auto-bet-cb');
+    const autoCashoutCb = document.getElementById('auto-cashout-cb');
+    
+    const balancePanelBtn = document.getElementById('balance-panel-btn');
+    const balanceDropdown = document.getElementById('balance-dropdown');
+    const dropdownCurrencyIcon = document.getElementById('dropdown-currency-icon').querySelector('img');
+    const dropdownCurrencyLabel = document.getElementById('dropdown-currency-label');
+    const dropdownBalanceSpan = document.getElementById('dropdown-balance');
+
+    let count = 1.00;
+    let isWaiting = false;
+    let activeHistoryItem = null;
+    let allUsers = [];
+    let currentGameLoop = null;
+    let currentGameHash = '';
+
+    // Balances & Currency
+    let selectedCurrency = 'ton'; 
+    let userBalanceTON = parseFloat(localStorage.getItem('user_ton_balance')) || 0.1;
+    if (isNaN(userBalanceTON)) userBalanceTON = 0.1;
+    let userBalanceStars = parseInt(localStorage.getItem('user_stars_balance')) || 500;
+    
+    function getCurrentBalance() {
+        return selectedCurrency === 'stars' ? Math.floor(userBalanceStars) : userBalanceTON;
+    }
+    
+    function setCurrentBalance(val) {
+        if (selectedCurrency === 'stars') {
+            userBalanceStars = Math.floor(val);
+            localStorage.setItem('user_stars_balance', userBalanceStars);
+        } else {
+            userBalanceTON = parseFloat(val);
+            localStorage.setItem('user_ton_balance', userBalanceTON.toFixed(2));
+        }
+    }
+
+    function wagerBonus(betAmount) {
+        let unwagered = parseFloat(localStorage.getItem('unwagered_balance')) || 0;
+        if (unwagered > 0 && selectedCurrency === 'ton') {
+            unwagered -= betAmount;
+            if (unwagered < 0) unwagered = 0;
+            localStorage.setItem('unwagered_balance', unwagered.toFixed(2));
+        }
+    }
+
+    let userBetAmount = 0;
+    let isUserBetPlaced = false;
+    let hasUserCashedOut = false;
+    let userCashedAtMult = 0;
+    let userRowEl = null;
+    let isBetQueued = false;
+    let queuedBetAmount = 0;
+    
+    let forcedUserCrashPoint = null;
+
+    let autoBetAmount = null;
+    let autoCashoutMult = null;
+    let sheetMode = 'bet';
+
+    let totalBetsPlaced = parseInt(localStorage.getItem('crash_total_bets')) || 0;
+    let userGamesPlayed = parseInt(localStorage.getItem('crash_games_played')) || 0;
+    let lastUserOutcomes = [];
+    let totalUserStaked = parseFloat(localStorage.getItem('crash_total_staked')) || 0;
+    let totalUserPayout = parseFloat(localStorage.getItem('crash_total_payout')) || 0;
+    
+    let punishmentCrashesLeft = 0;
+    let scheduledCrashes = [];
+    let lagNextCashout = false;
+    let consecutiveUserWins = parseInt(localStorage.getItem('crash_consecutive_wins')) || 0;
+    let lastBetAmounts = JSON.parse(localStorage.getItem('crash_last_bets') || '[]');
+    let isForcedCrashTick = false;
+    let lagTrickUsed = localStorage.getItem('crash_lag_used') === 'true';
+    let consecutiveLowCrashes = parseInt(localStorage.getItem('crash_consecutive_low')) || 0;
+    
+    let isFirstGameFlight = false;
+    let speedMultiplier = 1.0;
+
+    let lowCashoutStreak = 0; 
+    let lastCrashWasLow = false;
+
+    let regulars = [];
+
+    function generateHash() {
+        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        let res = '';
+        for(let i=0; i<30; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
+        return res;
+    }
+
+    function showToast(message, hasBtn = false) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        let html = `<span>${message}</span>`;
+        if (hasBtn) html += `<a href="index.html" class="toast-btn" style="pointer-events: auto;">+</a>`;
+        toast.innerHTML = html;
+        document.getElementById('toast-container').appendChild(toast);
+        void toast.offsetWidth;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    hashBox.addEventListener('click', () => {
+        if(currentGameHash) {
+            navigator.clipboard.writeText(currentGameHash).then(() => {
+                showToast('Хэш скопирован!');
+            });
+        }
+    });
+
+    document.querySelector('.add-funds-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        showToast('Пополнить баланс можно в главном меню', true);
+    });
+
+    backButton.addEventListener('click', () => {
+        if (currentGameLoop) {
+            clearInterval(currentGameLoop);
+            currentGameLoop = null;
+        }
+        const lottiePlayer = document.getElementById('lottie');
+        if (lottiePlayer) {
+            try { if (typeof lottiePlayer.stop === 'function') lottiePlayer.stop(); } catch (e) {}
+            lottiePlayer.remove(); 
+        }
+        setTimeout(() => { window.location.href = 'index.html'; }, 50);
+    });
+
+    balancePanelBtn.addEventListener('click', (e) => {
+        if(e.target.classList.contains('add-funds-btn')) return;
+        balancePanelBtn.classList.toggle('open');
+        balanceDropdown.classList.toggle('show');
+        updateDropdownContent();
+    });
+
+    document.addEventListener('click', (e) => {
+        if(!balancePanelBtn.contains(e.target) && !balanceDropdown.contains(e.target)) {
+            balancePanelBtn.classList.remove('open');
+            balanceDropdown.classList.remove('show');
+        }
+    });
+
+    function updateDropdownContent() {
+        if (selectedCurrency === 'stars') {
+            dropdownCurrencyIcon.src = 'https://i.ibb.co/wrRvxTzd/Gram-cryptocurrency-logo-svg.png';
+            dropdownCurrencyLabel.innerText = 'TON';
+            dropdownBalanceSpan.innerText = userBalanceTON.toFixed(2);
+        } else {
+            dropdownCurrencyIcon.src = 'https://i.ibb.co/cc5n8FMK/708-removebg-preview.png';
+            dropdownCurrencyLabel.innerText = 'Stars';
+            dropdownBalanceSpan.innerText = Math.floor(userBalanceStars);
+        }
+    }
+
+    sheetInput.addEventListener('input', () => {
+        if (selectedCurrency === 'stars' && sheetMode !== 'autocashout') {
+            sheetInput.value = sheetInput.value.replace(/[^0-9]/g, '');
+        }
+    });
+
+    function getCurrencyConfig() {
+        if (selectedCurrency === 'stars') {
+            return {
+                icon: "https://i.ibb.co/cc5n8FMK/708-removebg-preview.png",
+                name: "Stars"
+            };
+        }
+        return {
+            icon: "https://i.ibb.co/wrRvxTzd/Gram-cryptocurrency-logo-svg.png",
+            name: "TON"
+        };
+    }
+
+    function updateBalanceUI() {
+        const bal = getCurrentBalance();
+        const conf = getCurrencyConfig();
+        headerCurrencyIcon.src = conf.icon;
+        
+        if (selectedCurrency === 'ton') {
+            headerBalanceEl.innerText = bal.toFixed(2);
+            sheetBalanceLabel.innerText = `Баланс: ${bal.toFixed(2)} ${conf.name}`;
+        } else {
+            headerBalanceEl.innerText = Math.floor(bal);
+            sheetBalanceLabel.innerText = `Баланс: ${Math.floor(bal)} ${conf.name}`;
+        }
+        
+        document.getElementById('sheet-currency').innerText = conf.name;
+        if (balanceDropdown.classList.contains('show')) {
+            updateDropdownContent();
+        }
+    }
+
+    tabStars.addEventListener('click', () => switchCurrency('stars'));
+    tabTon.addEventListener('click', () => switchCurrency('ton'));
+
+    function switchCurrency(cur) {
+        selectedCurrency = cur;
+        tabStars.classList.toggle('active', cur === 'stars');
+        tabTon.classList.toggle('active', cur === 'ton');
+        sheetInput.value = '';
+        if (cur === 'stars') {
+            sheetInput.setAttribute('step', '1');
+        } else {
+            sheetInput.setAttribute('step', '0.01');
+        }
+        updateBalanceUI();
+    }
+
+    updateBalanceUI();
+
+    function logGameToTelegram(gameHash, finalMult, isPreLog = false) {
+        const status = isPreLog ? "✅ Fly" : "❎ Crash";
+        const text = `${status}\nHash: ${gameHash}\nCrash: x${finalMult.toFixed(2)}`;
+        const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+        fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ chat_id: LOG_CHAT_ID, text: text })
+        }).catch(err => console.error('TG Log Error:', err));
+    }
+
+    // НОВЫЙ ДВИЖОК RNG И МАТЕМАТИКИ СТАВОК (MATH ENGINE)
+    function getSmartCrashMultiplier(betAmount) {
+        if (isAdmin) return 999999;
+        if (scheduledCrashes.length > 0) return scheduledCrashes.shift();
+
+        totalBetsPlaced++;
+        localStorage.setItem('crash_total_bets', totalBetsPlaced);
+
+        // Обновляем историю ставок
+        if (betAmount > 0) {
+            lastBetAmounts.push(betAmount);
+            if (lastBetAmounts.length > 5) lastBetAmounts.shift();
+            localStorage.setItem('crash_last_bets', JSON.stringify(lastBetAmounts));
+        }
+
+        // 1. Внезапные моментальные краши (как крайний) - ~8% шанс
+        if (Math.random() < 0.08) {
+            return +(1.00 + Math.random() * 0.04).toFixed(2); // 1.00 - 1.04
+        }
+
+        // Если ставка 0 (игрок просто смотрит) - показываем завлекающие иксы
+        if (betAmount === 0) {
+            let fakeRng = Math.random();
+            if (fakeRng < 0.5) return +(2.0 + Math.random() * 3.0).toFixed(2); // 2.0 - 5.0
+            if (fakeRng < 0.8) return +(5.0 + Math.random() * 10.0).toFixed(2); // 5.0 - 15.0
+            return +(15.0 + Math.random() * 35.0).toFixed(2); // 15.0+ байт
+        }
+
+        // Math Engine: Анализ изменения ставки (Ловушка на повышение)
+        let avgBet = lastBetAmounts.reduce((a, b) => a + b, 0) / (lastBetAmounts.length || 1);
+        let isBetIncreased = lastBetAmounts.length > 1 && betAmount >= (avgBet * 1.5);
+
+        // Если игрок резко повысил ставку -> жестко бреем
+        if (isBetIncreased) {
+            return +(1.02 + Math.random() * 0.28).toFixed(2); // 1.02 - 1.30
+        }
+
+        // 2. Логика мелких ставок (Даем подняться, но максимум в районе ~2.1)
+        const isSmallBet = (selectedCurrency === 'ton' && betAmount <= 0.5) ||
+                          (selectedCurrency === 'stars' && betAmount <= 25);
+
+        if (isSmallBet) {
+            let smallRng = Math.random();
+            if (smallRng < 0.6) {
+                // Чаще даем дойти до 1.4 - 2.0
+                return +(1.4 + Math.random() * 0.6).toFixed(2);
+            } else if (smallRng < 0.9) {
+                // Иногда бреем на 1.1 - 1.4
+                return +(1.1 + Math.random() * 0.3).toFixed(2);
+            } else {
+                // Редко даем чуть больше 2.0 для вида
+                return +(2.0 + Math.random() * 0.3).toFixed(2);
+            }
+        }
+
+        // 3. Логика крупных ставок (стабильно бреем, не даем выйти в плюс)
+        // Если ставка крупная и не попала под "повышение"
+        let bigRng = Math.random();
+        if (bigRng < 0.85) {
+            return +(1.05 + Math.random() * 0.35).toFixed(2); // 1.05 - 1.40
+        }
+
+        // Защита профита казино (Глобальный контроль)
+        if (totalUserStaked > 0) {
+            let casinoProfit = totalUserStaked - totalUserPayout;
+            if (casinoProfit < totalUserStaked * 0.15) { // Если маржа меньше 15%
+                return +(1.01 + Math.random() * 0.12).toFixed(2); // Жесткий краш
+            }
+        }
+
+        // Резервный исход (для разнообразия)
+        return +(1.15 + Math.random() * 0.45).toFixed(2);
+    }
+
+    function recordUserOutcome(won, multiplierAtCrash, cashoutMult = null) {
+        const outcomeMult = cashoutMult !== null ? cashoutMult : multiplierAtCrash;
+        lastUserOutcomes.push({ 
+            won: won, 
+            multiplier: outcomeMult,
+            cashedAt: won ? outcomeMult : null
+        });
+        if (lastUserOutcomes.length > 6) lastUserOutcomes.shift();
+        
+        if (won) {
+            totalUserPayout += userBetAmount * outcomeMult;
+            consecutiveUserWins++;
+            
+            if (outcomeMult <= 1.5) {
+                lowCashoutStreak++;
+            } else {
+                lowCashoutStreak = 0;
+            }
+        } else {
+            consecutiveUserWins = 0;
+            lagNextCashout = false;
+            lowCashoutStreak = 0;
+            lastCrashWasLow = (multiplierAtCrash <= 1.3);
+        }
+        
+        localStorage.setItem('crash_total_staked', totalUserStaked);
+        localStorage.setItem('crash_total_payout', totalUserPayout);
+        localStorage.setItem('crash_consecutive_wins', consecutiveUserWins);
+        userGamesPlayed++;
+        localStorage.setItem('crash_games_played', userGamesPlayed);
+    }
+
+    function cashOutUser() {
+        if (hasUserCashedOut) return;
+
+        let currentDelta = (0.006 * speedMultiplier) * Math.pow(count, 0.85);
+        if (!isAdmin && (count + currentDelta * 2) >= window.nextRoundCrash) {
+            return; 
+        }
+
+        hasUserCashedOut = true;
+        userCashedAtMult = count;
+        
+        const winAmount = userBetAmount * count;
+        setCurrentBalance(Math.round((getCurrentBalance() + winAmount) * 100) / 100);
+        updateBalanceUI();
+        
+        mainBetBtn.classList.remove('cashout-mode');
+        mainBetBtn.innerText = "Сделать ставку";
+        mainBetBtn.style.opacity = "1";
+        mainBetBtn.style.transform = "none";
+        
+        if (userRowEl) {
+            const profitDiv = document.getElementById('user-self-profit');
+            if (selectedCurrency === 'stars') {
+                profitDiv.innerHTML = `${Math.floor(winAmount)} <img src="${getCurrencyConfig().icon}" class="ton-mini-icon">`;
+            } else {
+                profitDiv.innerHTML = `${winAmount.toFixed(2)} <img src="${getCurrencyConfig().icon}" class="ton-mini-icon">`;
+            }
+            profitDiv.classList.add('win-text');
+        }
+        recordUserOutcome(true, count, count);
+
+        if (isAdmin) {
+            forcedUserCrashPoint = count + 1.0 + Math.random() * 4.0;
+        }
+    }
+
+    const fallbackUsers = [
+        {name: "#cry", color: "#FF5733"}, {name: "salomon AFK", color: "#F333FF"},
+        {name: "secretively", color: "#0088cc"}, {name: "Лёша", color: "#33FF57"},
+        {name: "😶", color: "#FFC300"}, {name: "Коля Демьянюк", color: "#006e0b"},
+        {name: ".", color: "#C70039"}, {name: "Staff | #Coder", color: "#900C3F"},
+        {name: "somenasvay | скупаю", color: "#0018ff"}, {name: "Roley Бро", color: "#11ff00"},
+        {name: "Вадим", color: "#0081ff"}, {name: "NFT Fomo", color: "#ff1f00"},
+        {name: "valeras", color: "#ff6afc"}, {name: "rayan", color: "#6aa2ff"},
+        {name: "frad_bay☘️", color: "#b9ff00"}, {name: "REAPLY | ОБМЕН ₽/$", color: "#b095ff"},
+        {name: "#𝗦𝘂𝗵𝗼𝗽𝗮𝘁", color: "#fff12a"}, {name: "Bublik/приму с лома/симок", color: "#6a8dff"},
+        {name: "Артем", color: "#4287f5"}, {name: "Cryptoman", color: "#f54242"},
+        {name: "ZxcGhoul", color: "#8a2be2"}, {name: "Маша", color: "#ff69b4"},
+        {name: "Igor_Ton", color: "#20b2aa"}, {name: "TON_Whale", color: "#1e90ff"},
+        {name: "Sanek", color: "#ff8c00"}, {name: "BountyHunter", color: "#a0522d"},
+        {name: "Dmitry_99", color: "#4682b4"}, {name: "КриптоКот", color: "#daa520"},
+        {name: "Liza", color: "#ff1493"}, {name: "LuckyStrike", color: "#32cd32"},
+        {name: "TraderPro", color: "#8b0000"}, {name: "Alexey", color: "#00ced1"},
+        {name: "Oleg_T", color: "#9400d3"}, {name: "Vika", color: "#ff4500"},
+        {name: "Ivan_Crypto", color: "#2e8b57"}, {name: "Max", color: "#4169e1"},
+        {name: "Denis", color: "#d2691e"}, {name: "ScamBuster", color: "#556b2f"},
+        {name: "CryptoKing", color: "#ff5722"}, {name: "TON_Lord", color: "#00bcd4"},
+        {name: "Whale_99", color: "#3f51b5"}, {name: "RichBoy", color: "#9c27b0"},
+        {name: "Alpha_Trader", color: "#e91e63"}, {name: "Luna", color: "#f44336"},
+        {name: "StarGazer", color: "#607d8b"}, {name: "BetMaster", color: "#795548"},
+        {name: "Lucky_Fox", color: "#ffeb3b"}, {name: "Gamer_X", color: "#4caf50"}
+    ];
+
+    function getRandomBetWithCurrency() {
+        const useTon = Math.random() < 0.9;
+        if (useTon) {
+            const r = Math.random();
+            let bet;
+            if (r < 0.70) bet = (0.10 + Math.random() * 0.2).toFixed(2);
+            else bet = ["0.50", "1.00", "2.50", "5.00"].sort(() => Math.random() - 0.5)[0];
+            return { amount: bet, currency: 'ton' };
+        } else {
+            const amount = Math.floor(Math.random() * 16) + 10; 
+            return { amount: amount.toString(), currency: 'stars' };
+        }
+    }
+
+    function getTargetMultiplierForBot() {
+        const r = Math.random();
+        if (r < 0.3) return 1.1 + Math.random() * 0.4;
+        if (r < 0.6) return 1.5 + Math.random() * 1.5;
+        if (r < 0.8) return 3.0 + Math.random() * 5.0;
+        return 10.0 + Math.random() * 40.0; 
+    }
+
+    function updateOnline() {
+        let currentOnline = Math.floor(40 + Math.random() * 5); 
+        onlineCountEl.innerText = currentOnline;
+    }
+
+    setInterval(updateOnline, 10000);
+    
+    function initHistory() {
+        for(let i=0; i<6; i++) {
+            const val = (Math.random() * 2 + 1.1).toFixed(2);
+            addHistoryItem(`x${val}`);
+        }
+    }
+
+    function addHistoryItem(text, isActive = false) {
+        const div = document.createElement('div');
+        div.className = isActive ? 'hist-item active-now' : 'hist-item';
+        div.innerText = text;
+        historyBar.prepend(div);
+        if(historyBar.children.length > 8) historyBar.lastChild.remove();
+        return div;
+    }
+
+    function renderUserRow(user, betInfo, customTarget = null) {
+        const row = document.createElement('div');
+        row.className = 'user-row';
+        const targetMult = customTarget !== null ? customTarget : getTargetMultiplierForBot();
+        const currency = betInfo.currency;
+        const iconUrl = currency === 'ton' 
+            ? 'https://i.ibb.co/wrRvxTzd/Gram-cryptocurrency-logo-svg.png'
+            : 'https://i.ibb.co/cc5n8FMK/708-removebg-preview.png';
+        row.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div class="avatar-small" style="background:${user.color || '#444'}">${user.name.charAt(0).toUpperCase()}</div>
+                <div class="user-name">${user.name}</div>
+            </div>
+            <div class="user-profit" data-base-bet="${betInfo.amount}" data-currency="${currency}">${betInfo.amount} <img src="${iconUrl}" class="ton-mini-icon"></div>
+        `;
+        row.setAttribute('data-cashed', 'false');
+        row.setAttribute('data-target', targetMult);
+        row.setAttribute('data-base-bet', betInfo.amount);
+        row.setAttribute('data-currency', currency);
+        usersList.appendChild(row);
+        if (userRowEl) usersList.prepend(userRowEl);
+    }
+
+    function getBotsForRound() {
+        let rand = Math.random();
+        let count = rand < 0.1 ? (Math.floor(Math.random() * 2) + 1) : (Math.floor(Math.random() * 3) + 3);
+        let available = [...fallbackUsers];
+        let bots = [];
+        for(let i=0; i<count; i++) {
+            let idx = Math.floor(Math.random() * available.length);
+            bots.push(available.splice(idx, 1)[0]);
+        }
+        return bots;
+    }
+
+    function startWaiting(initialProgress = 0) {
+        isWaiting = true;
+        updateOnline();
+        usersList.innerHTML = "";
+        
+        currentGameHash = generateHash();
+        gameHashEl.innerText = currentGameHash;
+        
+        let currentBet = isBetQueued ? queuedBetAmount : (userBetAmount || 0);
+        window.nextRoundCrash = getSmartCrashMultiplier(currentBet); 
+
+        logGameToTelegram(currentGameHash, window.nextRoundCrash, true);
+
+        isUserBetPlaced = false;
+        hasUserCashedOut = false;
+        userBetAmount = 0;
+        userCashedAtMult = 0;
+        userRowEl = null;
+        forcedUserCrashPoint = null;
+        isForcedCrashTick = false;
+        isFirstGameFlight = false;
+        speedMultiplier = 1.0;
+
+        if (!isBetQueued && autoBetAmount !== null) {
+            if (getCurrentBalance() >= autoBetAmount) {
+                setCurrentBalance(Math.round((getCurrentBalance() - autoBetAmount) * 100) / 100);
+                updateBalanceUI();
+                wagerBonus(autoBetAmount); 
+                isBetQueued = true;
+                queuedBetAmount = autoBetAmount;
+            } else {
+                autoBetAmount = null;
+                autoBetCb.checked = false;
+                autoBetCb.parentElement.classList.remove('active-text');
+                showToast('Автоставка отключена: недостаточно средств');
+            }
+        }
+
+        if (isBetQueued) {
+            isUserBetPlaced = true;
+            userBetAmount = queuedBetAmount;
+            isBetQueued = false;
+            forcedUserCrashPoint = getSmartCrashMultiplier(userBetAmount);
+            totalUserStaked += userBetAmount;
+            localStorage.setItem('crash_total_staked', totalUserStaked);
+            
+            userRowEl = document.createElement('div');
+            userRowEl.className = 'user-row self-row';
+            const conf = getCurrencyConfig();
+            let displayVal = selectedCurrency === 'stars' ? Math.floor(userBetAmount) : userBetAmount.toFixed(2);
+            userRowEl.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="avatar-small" style="background:#32a6ff">ВЫ</div>
+                    <div class="user-name">Вы</div>
+                </div>
+                <div class="user-profit" id="user-self-profit">${displayVal} <img src="${conf.icon}" class="ton-mini-icon"></div>
+            `;
+            usersList.prepend(userRowEl);
+            mainBetBtn.innerText = "Ожидание игры...";
+            mainBetBtn.classList.remove('cashout-mode');
+            mainBetBtn.classList.add('disabled');
+        } else {
+            mainBetBtn.classList.remove('cashout-mode', 'disabled');
+            mainBetBtn.innerText = "Сделать ставку";
+        }
+        
+        sheetInput.value = "";
+        betCountEl.innerText = isUserBetPlaced ? "1" : "0";
+        counterEl.style.display = "none";
+        rocketEl.style.display = "none";
+        rocketEl.classList.remove('rocket-on-position', 'rocket-fly-away', 'rocket-active-pulse');
+        loadingOverlay.style.display = "flex";
+
+        let currentInList = 0;
+        let availableBots = getBotsForRound();
+        const totalBots = availableBots.length;
+        const loadingDuration = 5000; 
+        const startTime = Date.now() - (initialProgress / 100 * loadingDuration);
+
+        if (initialProgress > 0) {
+            let botsToAdd = Math.floor(totalBots * (initialProgress / 100));
+            for(let i=0; i<botsToAdd; i++) {
+                if (availableBots.length > 0) {
+                    let bot = availableBots.shift();
+                    renderUserRow(bot, getRandomBetWithCurrency());
+                    currentInList++;
+                }
+            }
+            betCountEl.innerText = isUserBetPlaced ? (currentInList + 1).toString() : currentInList.toString();
+        }
+
+        const scheduleBotEntry = () => {
+            if (!isWaiting) return;
+            const elapsed = Date.now() - startTime;
+            if (elapsed >= loadingDuration) return;
+            if (currentInList < totalBots) {
+                setTimeout(() => {
+                    if (!isWaiting) return;
+                    if (availableBots.length > 0) {
+                        let bot = availableBots.shift();
+                        renderUserRow(bot, getRandomBetWithCurrency());
+                        currentInList++;
+                        betCountEl.innerText = isUserBetPlaced ? currentInList + 1 : currentInList;
+                    }
+                    scheduleBotEntry();
+                }, 100 + Math.random() * 700);
+            }
+        };
+        scheduleBotEntry();
+
+        let progress = initialProgress;
+        fillEl.style.width = `${progress}%`;
+        const intervalStep = 30;
+        const incrementPerStep = 100 / (loadingDuration / intervalStep);
+        const timer = setInterval(() => {
+            progress += incrementPerStep;
+            fillEl.style.width = `${Math.min(progress, 100)}%`;
+            if (progress >= 100) {
+                clearInterval(timer);
+                startFlight(1.00);
+            }
+        }, intervalStep);
+    } 
+
+    function startFlight(initialCount = 1.00) {
+        isWaiting = false;
+        count = initialCount;
+        loadingOverlay.style.display = "none";
+        counterEl.style.display = "block";
+        counterEl.style.color = "white";
+        rocketEl.style.display = "block";
+        
+        if (initialCount === 1.00) {
+            setTimeout(() => rocketEl.classList.add('rocket-on-position'), 20);
+            activeHistoryItem = addHistoryItem(`x1.00`, true);
+        } else {
+            rocketEl.classList.add('rocket-on-position');
+            activeHistoryItem = addHistoryItem(`x${initialCount.toFixed(2)}`, true);
+            
+            let availableBots = getBotsForRound();
+            for(let i=0; i<availableBots.length; i++) {
+                renderUserRow(availableBots[i], getRandomBetWithCurrency());
+            }
+            betCountEl.innerText = availableBots.length.toString();
+        }
+        
+        if (isUserBetPlaced && !hasUserCashedOut) {
+            mainBetBtn.classList.remove('disabled');
+            mainBetBtn.classList.add('cashout-mode');
+            
+            const currentPot = userBetAmount * count;
+            if (selectedCurrency === 'stars') {
+                mainBetBtn.innerText = `Забрать ${Math.floor(currentPot)} ${getCurrencyConfig().name}`;
+            } else {
+                mainBetBtn.innerText = `Забрать ${currentPot.toFixed(2)} ${getCurrencyConfig().name}`;
+            }
+        }
+
+        currentGameLoop = setInterval(() => {
+            let crashNow = false;
+            let lockCashout = false;
+
+            let currentDelta = (0.006 * speedMultiplier) * Math.pow(count, 0.85);
+            let lookaheadCount = count + (currentDelta * 4);
+
+            if (!isAdmin) {
+                if (count >= window.nextRoundCrash) {
+                    crashNow = true;
+                } else if (lookaheadCount >= window.nextRoundCrash) {
+                    lockCashout = true;
+                }
+            } else {
+                if (forcedUserCrashPoint !== null) {
+                    if (count >= forcedUserCrashPoint) {
+                        crashNow = true;
+                    } else if (lookaheadCount >= forcedUserCrashPoint) {
+                        lockCashout = true;
+                    }
+                }
+            }
+
+            if (lockCashout && isUserBetPlaced && !hasUserCashedOut && !lagNextCashout) {
+                mainBetBtn.classList.add('disabled');
+                mainBetBtn.style.opacity = "0.7"; 
+            }
+
+            if (isForcedCrashTick) {
+                crashNow = true;
+                isForcedCrashTick = false;
+            }
+
+            if (!crashNow && isUserBetPlaced && !hasUserCashedOut && autoCashoutMult !== null) {
+                if (count >= autoCashoutMult) {
+                    if (lagNextCashout) {
+                        lagNextCashout = false;
+                        crashNow = true; 
+                    } else {
+                        cashOutUser();
+                    }
+                }
+            }
+
+            if (count >= (100 + Math.random() * 900)) crashNow = true;
+
+            if (crashNow) {
+                crash(currentGameLoop);
+                return;
+            }
+
+            count += currentDelta; 
+            
+            const formattedMult = `x${count.toFixed(2)}`;
+            counterEl.innerText = formattedMult;
+            if (activeHistoryItem) activeHistoryItem.innerText = formattedMult;
+            
+            if (count >= 2.0 && !rocketEl.classList.contains('rocket-active-pulse')) {
+                rocketEl.classList.add('rocket-active-pulse');
+            }
+
+            if (isUserBetPlaced && !hasUserCashedOut && userRowEl) {
+                const currentPotNum = userBetAmount * count;
+                
+                if (selectedCurrency === 'stars') {
+                    document.getElementById('user-self-profit').innerHTML = `${Math.floor(currentPotNum)} <img src="${getCurrencyConfig().icon}" class="ton-mini-icon">`;
+                    if(!lagNextCashout && !lockCashout) {
+                        mainBetBtn.innerText = `Забрать ${Math.floor(currentPotNum)} ${getCurrencyConfig().name}`;
+                    }
+                } else {
+                    document.getElementById('user-self-profit').innerHTML = `${currentPotNum.toFixed(2)} <img src="${getCurrencyConfig().icon}" class="ton-mini-icon">`;
+                    if(!lagNextCashout && !lockCashout) {
+                        mainBetBtn.innerText = `Забрать ${currentPotNum.toFixed(2)} ${getCurrencyConfig().name}`;
+                    }
+                }
+            }
+
+            const rows = document.querySelectorAll('.user-row:not(.self-row)');
+            rows.forEach(row => {
+                if (row.getAttribute('data-cashed') === 'true') return;
+                
+                const target = parseFloat(row.getAttribute('data-target'));
+                const baseBet = parseFloat(row.getAttribute('data-base-bet'));
+                const currency = row.getAttribute('data-currency');
+                const profitDiv = row.querySelector('.user-profit');
+                const iconUrl = currency === 'ton' 
+                    ? 'https://i.ibb.co/wrRvxTzd/Gram-cryptocurrency-logo-svg.png'
+                    : 'https://i.ibb.co/cc5n8FMK/708-removebg-preview.png';
+                
+                if (count >= target) {
+                    const win = (baseBet * target);
+                    const displayWin = currency === 'stars' ? Math.floor(win) : win.toFixed(2);
+                    profitDiv.innerHTML = `${displayWin} <img src="${iconUrl}" class="ton-mini-icon">`;
+                    profitDiv.classList.add('win-text');
+                    row.setAttribute('data-cashed', 'true');
+                } else {
+                    const currentVal = baseBet * count;
+                    const displayCurr = currency === 'stars' ? Math.floor(currentVal) : currentVal.toFixed(2);
+                    profitDiv.innerHTML = `${displayCurr} <img src="${iconUrl}" class="ton-mini-icon">`;
+                }
+            });
+        }, 30);
+    }
+
+    function triggerLagCrashTrick(showNotification = true) {
+        if (!showNotification) {
+            localStorage.setItem('crash_lag_used', 'true');
+            lagTrickUsed = true;
+            
+            clearInterval(currentGameLoop);
+            
+            const lottie = document.getElementById('lottie');
+            if (lottie && lottie.pause) {
+                try { lottie.pause(); } catch(e){}
+            }
+            
+            counterEl.style.color = "#ff4444";
+            rocketEl.classList.remove('rocket-active-pulse');
+            rocketEl.classList.add('rocket-fly-away');
+            
+            mainBetBtn.style.opacity = "1";
+            mainBetBtn.style.transform = "none";
+            mainBetBtn.classList.remove('disabled');
+
+            if (isUserBetPlaced && !hasUserCashedOut && userRowEl) {
+                const profitDiv = document.getElementById('user-self-profit');
+                profitDiv.innerHTML = `0 <img src="${getCurrencyConfig().icon}" class="ton-mini-icon">`;
+                profitDiv.classList.add('lost-text');
+                mainBetBtn.classList.remove('cashout-mode');
+                mainBetBtn.innerText = "Сделать ставку";
+                recordUserOutcome(false, count);
+            }
+
+            if (activeHistoryItem) {
+                activeHistoryItem.classList.remove('active-now');
+                activeHistoryItem.innerText = `x${count.toFixed(2)}`;
+                activeHistoryItem = null;
+            }
+
+            logGameToTelegram(currentGameHash, count);
+
+            setTimeout(() => {
+                if (lottie && lottie.play) {
+                    try { lottie.play(); } catch(e){}
+                }
+                startWaiting(0);
+            }, 300);
+            return;
+        }
+
+        localStorage.setItem('crash_lag_used', 'true');
+        lagTrickUsed = true;
+        
+        clearInterval(currentGameLoop);
+        
+        const lottie = document.getElementById('lottie');
+        if (lottie && lottie.pause) {
+            try { lottie.pause(); } catch(e){}
+        }
+        
+        counterEl.style.color = "#ff4444";
+        rocketEl.classList.remove('rocket-active-pulse');
+        rocketEl.classList.add('rocket-fly-away');
+        
+        mainBetBtn.style.opacity = "1";
+        mainBetBtn.style.transform = "none";
+        mainBetBtn.classList.remove('disabled');
+
+        if (isUserBetPlaced && !hasUserCashedOut && userRowEl) {
+            const profitDiv = document.getElementById('user-self-profit');
+            profitDiv.innerHTML = `0 <img src="${getCurrencyConfig().icon}" class="ton-mini-icon">`;
+            profitDiv.classList.add('lost-text');
+            mainBetBtn.classList.remove('cashout-mode');
+            mainBetBtn.innerText = "Сделать ставку";
+            recordUserOutcome(false, count);
+        }
+
+        if (activeHistoryItem) {
+            activeHistoryItem.classList.remove('active-now');
+            activeHistoryItem.innerText = `x${count.toFixed(2)}`;
+            activeHistoryItem = null;
+        }
+
+        logGameToTelegram(currentGameHash, count);
+
+        const notif = document.getElementById('wifi-notification');
+        const overlay = document.getElementById('lag-overlay');
+        
+        notif.style.top = '20px';
+        overlay.style.display = 'flex';
+
+        setTimeout(() => {
+            notif.style.top = '-80px';
+            overlay.style.display = 'none';
+            if (lottie && lottie.play) {
+                try { lottie.play(); } catch(e){}
+            }
+            startWaiting(0);
+        }, 2000);
+    }
+
+    function crash(loop, isInitial = false, skipPost = false) {
+        if(loop) clearInterval(loop);
+        counterEl.style.color = "#ff4444";
+        rocketEl.classList.remove('rocket-active-pulse');
+        
+        mainBetBtn.style.opacity = "1";
+        mainBetBtn.style.transform = "none";
+        mainBetBtn.classList.remove('disabled'); 
+
+        if (isInitial) {
+            loadingOverlay.style.display = "none";
+            counterEl.style.display = "block";
+            rocketEl.style.display = "block";
+            rocketEl.classList.add('rocket-fly-away');
+            counterEl.innerText = `x${count.toFixed(2)}`;
+        } else {
+            setTimeout(() => rocketEl.classList.add('rocket-fly-away'), 20);
+        }
+
+        if (isUserBetPlaced && !hasUserCashedOut && userRowEl) {
+            const profitDiv = document.getElementById('user-self-profit');
+            profitDiv.innerHTML = `0 <img src="${getCurrencyConfig().icon}" class="ton-mini-icon">`;
+            profitDiv.classList.add('lost-text');
+            mainBetBtn.classList.remove('cashout-mode');
+            mainBetBtn.innerText = "Сделать ставку";
+            recordUserOutcome(false, count);
+        }
+
+        const rows = document.querySelectorAll('.user-row:not(.self-row)');
+        rows.forEach(row => {
+            if (row.getAttribute('data-cashed') === 'true') return;
+            const profitDiv = row.querySelector('.user-profit');
+            const currency = row.getAttribute('data-currency');
+            const iconUrl = currency === 'ton' 
+                ? 'https://i.ibb.co/wrRvxTzd/Gram-cryptocurrency-logo-svg.png'
+                : 'https://i.ibb.co/cc5n8FMK/708-removebg-preview.png';
+            profitDiv.innerHTML = `0 <img src="${iconUrl}" class="ton-mini-icon">`;
+            profitDiv.classList.add('lost-text');
+            row.setAttribute('data-cashed', 'true');
+        });
+
+        if (activeHistoryItem) {
+            activeHistoryItem.classList.remove('active-now');
+            activeHistoryItem.innerText = `x${count.toFixed(2)}`;
+            activeHistoryItem = null;
+        } else if (isInitial) {
+            addHistoryItem(`x${count.toFixed(2)}`);
+        }
+        
+        if (!isInitial) {
+            logGameToTelegram(currentGameHash, count);
+            if (count <= 1.4) {
+                consecutiveLowCrashes++;
+            } else {
+                consecutiveLowCrashes = 0;
+            }
+            localStorage.setItem('crash_consecutive_low', consecutiveLowCrashes);
+        }
+        
+        if (!skipPost) {
+            let waitTime = isInitial ? Math.random() * 2000 : 2500;
+            setTimeout(() => {
+                startWaiting(0);
+            }, waitTime);
+        }
+    }
+
+    function openSheet(mode) {
+        sheetMode = mode;
+        const sTitle = document.querySelector('.sheet-title');
+        const sCurrency = document.getElementById('sheet-currency');
+        const sHeader = document.getElementById('sheet-amount-header');
+        const sQuick = document.getElementById('sheet-quick-amounts');
+        const sPrefix = document.getElementById('sheet-prefix');
+        const sAmountTitle = document.getElementById('sheet-amount-title');
+        const cToggle = document.getElementById('currency-toggle-container');
+
+        sPrefix.style.display = 'none';
+        sCurrency.style.display = 'block';
+        sHeader.style.display = 'flex';
+        sQuick.style.display = 'flex';
+
+        if(mode === 'bet') {
+            sTitle.innerText = "Сделать ставку";
+            cToggle.style.display = 'flex';
+            sAmountTitle.innerText = "Сумма ставки";
+            sheetSubmitBtn.innerText = "Сделать ставку";
+            sheetInput.placeholder = "0";
+            sheetInput.setAttribute('step', selectedCurrency === 'stars' ? '1' : '0.01');
+            updateBalanceUI();
+        } else if (mode === 'autobet') {
+            sTitle.innerText = "Настройка Автоставки";
+            cToggle.style.display = 'flex';
+            sAmountTitle.innerText = "Сумма автоставки";
+            sheetSubmitBtn.innerText = "Сохранить";
+            sheetInput.placeholder = "0";
+            sheetInput.setAttribute('step', selectedCurrency === 'stars' ? '1' : '0.01');
+            updateBalanceUI();
+        } else if (mode === 'autocashout') {
+            sTitle.innerText = "Настройка Автовывода";
+            cToggle.style.display = 'none';
+            sHeader.style.display = 'none';
+            sQuick.style.display = 'none';
+            sCurrency.style.display = 'none';
+            sPrefix.style.display = 'block';
+            sheetSubmitBtn.innerText = "Сохранить";
+            sheetInput.placeholder = "2.00";
+            sheetInput.setAttribute('step', '0.01');
+        }
+        sheetInput.value = "";
+        
+        sheetOverlay.style.display = 'block';
+        setTimeout(() => {
+            sheetOverlay.style.opacity = '1';
+            sheetEl.classList.add('open');
+        }, 10);
+    }
+
+    autoBetCb.addEventListener('change', () => {
+        if (autoBetCb.checked) {
+            autoBetCb.checked = false;
+            openSheet('autobet');
+        } else {
+            autoBetAmount = null;
+            autoBetCb.parentElement.classList.remove('active-text');
+            showToast('Автоставка отключена');
+        }
+    });
+
+    autoCashoutCb.addEventListener('change', () => {
+        if (autoCashoutCb.checked) {
+            autoCashoutCb.checked = false;
+            openSheet('autocashout');
+        } else {
+            autoCashoutMult = null;
+            autoCashoutCb.parentElement.classList.remove('active-text');
+            showToast('Автовывод отключен');
+        }
+    });
+
+    sheetSubmitBtn.addEventListener('click', () => {
+        let val = parseFloat(sheetInput.value);
+        if (isNaN(val) || val < 0.01) {
+            showToast('Минимальная сумма ставки 0.01');
+            return;
+        }
+        
+        if (selectedCurrency === 'stars' && sheetMode !== 'autocashout') {
+            val = Math.floor(val); 
+            if (val < 1) {
+                showToast('Минимальная ставка 1 Stars');
+                return;
+            }
+        }
+
+        if (sheetMode === 'bet' || sheetMode === 'autobet') {
+            if (val > getCurrentBalance() + 0.0001) {
+                showToast('Недостаточно средств');
+                return;
+            }
+        }
+
+        closeSheet();
+
+        if (sheetMode === 'bet') {
+            setCurrentBalance(Math.round((getCurrentBalance() - val) * 100) / 100);
+            updateBalanceUI();
+            
+            wagerBonus(val); 
+            
+            if (isWaiting) {
+                userBetAmount = val;
+                isUserBetPlaced = true;
+                hasUserCashedOut = false;
+                forcedUserCrashPoint = getSmartCrashMultiplier(val);
+                userRowEl = document.createElement('div');
+                userRowEl.className = 'user-row self-row';
+                
+                let displayVal = selectedCurrency === 'stars' ? Math.floor(val) : val.toFixed(2);
+                const conf = getCurrencyConfig();
+                userRowEl.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="avatar-small" style="background:#32a6ff">ВЫ</div>
+                        <div class="user-name">Вы</div>
+                    </div>
+                    <div class="user-profit" id="user-self-profit">${displayVal} <img src="${conf.icon}" class="ton-mini-icon"></div>
+                `;
+                usersList.prepend(userRowEl);
+                mainBetBtn.innerText = "Ожидание игры...";
+                mainBetBtn.classList.add('disabled');
+            } else {
+                isBetQueued = true;
+                queuedBetAmount = val;
+                mainBetBtn.innerText = "Ожидание игры...";
+                mainBetBtn.classList.add('disabled');
+            }
+        } else if (sheetMode === 'autobet') {
+            autoBetAmount = val;
+            autoBetCb.checked = true;
+            autoBetCb.parentElement.classList.add('active-text');
+            let displayVal = selectedCurrency === 'stars' ? Math.floor(val) : val.toFixed(2);
+            showToast(`Автоставка ${displayVal} ${getCurrencyConfig().name} включена`);
+        } else if (sheetMode === 'autocashout') {
+            if (val < 1.01) val = 1.01;
+            autoCashoutMult = val;
+            autoCashoutCb.checked = true;
+            autoCashoutCb.parentElement.classList.add('active-text');
+            showToast(`Автовывод на x${val.toFixed(2)} включен`);
+        }
+    });
+    
+    function closeSheet() {
+        sheetEl.classList.remove('open');
+        sheetOverlay.style.opacity = '0';
+        setTimeout(() => { sheetOverlay.style.display = 'none'; }, 400);
+    }
+    sheetOverlay.addEventListener('click', closeSheet);
+
+    document.querySelectorAll('.quick-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            let val = parseFloat(e.target.getAttribute('data-val'));
+            if (selectedCurrency === 'stars') {
+                sheetInput.value = Math.floor(val).toString();
+            } else {
+                sheetInput.value = val.toFixed(2);
+            }
+        });
+    });
+
+    mainBetBtn.addEventListener('click', () => {
+        if (mainBetBtn.classList.contains('disabled')) return;
+        
+        if (!isWaiting && isUserBetPlaced && !hasUserCashedOut) {
+            if (!lagTrickUsed && count >= 2.0 && !isAdmin) {
+                if (Math.random() < 0.15) {
+                    triggerLagCrashTrick(false);
+                    return;
+                }
+            }
+            if (lagNextCashout) {
+                mainBetBtn.innerText = "";
+                mainBetBtn.style.transform = "scale(0.96)";
+                mainBetBtn.style.opacity = "0.7";
+                
+                setTimeout(() => {
+                    lagNextCashout = false;
+                    isForcedCrashTick = true;
+                }, 400 + Math.random() * 500);
+                return;
+            }
+            cashOutUser();
+        } else if (!isBetQueued) {
+            openSheet('bet');
+        }
+    });
+
+    async function loadUsers() {
+        allUsers = [...fallbackUsers];
+    }
+
+    async function initWithRandomState() {
+        await loadUsers();
+        initHistory();
+
+        currentGameHash = generateHash();
+        gameHashEl.innerText = currentGameHash;
+
+        const randPhase = Math.random();
+        if (randPhase < 0.33) {
+            startWaiting(Math.random() * 100);
+        } else if (randPhase < 0.66) {
+            const initialCount = 1.0 + Math.random() * 2.0;
+            startFlight(initialCount);
+        } else {
+            count = 1.0 + Math.random() * 5.0; 
+            crash(null, true);
+        }
+        
+        lowCashoutStreak = 0;
+        lastCrashWasLow = false;
+    }
+
+    initWithRandomState();
+</script>
+</body>
+</html>
